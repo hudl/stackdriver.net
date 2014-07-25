@@ -14,7 +14,7 @@ public static readonly MetricAggregator Aggregator = new MetricAggregator(ApiKey
 // elsewhere in your code...
 Aggregator.Increment("logins");
 ...
-Aggregator.Increment("purchase.books");
+Aggregator.Increment("purchase.books", order.Items.Count);
 // etc.
 ```
 
