@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<project name="Hudl.StackDriver">  
+  <property name="teamcity_dotnet_tools_version" value="4.0"/> <!-- force MSBuild 4.0 -->
+  <property name="tempDir" value="${codeDir}\Hudl.StackDriver\Temp_HudlStackDriver" />
+  <property name="compiledDir" value="${codeDir}\Hudl.StackDriver\Deploy_HudlStackDriver" />
+
+  <target name="Build" description="Build" depends="">    
+    <msbuild failonerror="true" project="${codeDir}\Hudl.StackDriver\Hudl.StackDriver.csproj" target="Rebuild">
+      <property name="Configuration" value="Release" />
+      <property name="DeployOnBuild" value="true" />
+      <property name="PublishProfile" value="Local" />
+      <property name="VisualStudioVersion" value="11.0" />
+      <property name="WarningLevel" value="0" />
+	  <arg value="/m" />
+	  <arg value="/nologo" />
+    </msbuild>
+  </target>  
+
+  <target name="UnitTest" description="Run unit tests" depends="Build">
+	<msbuild project="${codeDir}\Hudl.StackDriver.Tests\Hudl.StackDriver.Tests.csproj" target="Rebuild,UnitTest">
+	  <property name="Configuration" value="Release"/>
+	</msbuild>
+  </target>
+</project>

@@ -1,0 +1,6 @@
+Debug
+Release
+Bin
+packages
+*.suo
+*.user
