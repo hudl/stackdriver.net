@@ -45,27 +45,32 @@ namespace Hudl.StackDriver
             var sendInstanceId = instanceId ?? _instanceId;
 
             var msg = new CustomMetricsMessage(new DataPoint(name, value, sendCollectedAt, sendInstanceId));
-            var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson()));
+            var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson())).ConfigureAwait(false);
 
             if (result.StatusCode != HttpStatusCode.Created)
             {
                 // the normal response is a 201. For any other response code, log the code and the response body (which will hopefully say 
                 // what StackDriver didn't like with the request.
-                var body = await result.Content.ReadAsStringAsync();
+                var body = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
                 Log.WarnFormat("Sent metric. Name={0}, StatusCode={1}, Body={2}", name, result.StatusCode, body);
             }
+        }
+
+        public void SendBatchMetrics(IEnumerable<DataPoint> dataPoints)
+        {
+            SendBatchMetricsAsync(dataPoints).RunSynchronously();
         }
 
         public async Task SendBatchMetricsAsync(IEnumerable<DataPoint> dataPoints)
         {
             var msg = new CustomMetricsMessage(dataPoints);
-            var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson()));
+            var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson())).ConfigureAwait(false);
 
             if (result.StatusCode != HttpStatusCode.Created)
             {
                 // the normal response is a 201. For any other response code, log the code and the response body (which will hopefully say 
                 // what StackDriver didn't like with the request.
-                var body = await result.Content.ReadAsStringAsync();
+                var body = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
                 Log.WarnFormat("Sent metrics batch. StatusCode={0}, Body={1}", result.StatusCode, body);
             }
         }

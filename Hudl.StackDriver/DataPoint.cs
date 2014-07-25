@@ -12,7 +12,7 @@ namespace Hudl.StackDriver
 
         public DataPoint(string name, object value, DateTime collectedAt, string instanceId = null)
         {
-            if (String.IsNullOrEmpty(name))
+            if (String.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
             }

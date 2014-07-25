@@ -17,17 +17,18 @@ namespace Hudl.StackDriver
     {
         private readonly ConcurrentDictionary<string, MetricCounter> _counters = new ConcurrentDictionary<string, MetricCounter>();
         private readonly CustomMetricsPoster _customMetricsPoster;
+        private readonly Timer _timer;
 
         public MetricAggregator(string apiKey, string instanceId = null)
         {
             _customMetricsPoster = new CustomMetricsPoster(apiKey, instanceId);
 
-            var timer = new Timer
+            _timer = new Timer
             {
                 Interval = TimeSpan.FromSeconds(60).TotalMilliseconds,
             };
-            timer.Elapsed += Tick;
-            timer.Start();
+            _timer.Elapsed += Tick;
+            _timer.Start();
         }
 
         public void Increment(string metric)
