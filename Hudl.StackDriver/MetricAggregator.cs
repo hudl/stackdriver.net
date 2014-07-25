@@ -18,7 +18,7 @@ namespace Hudl.StackDriver
         private readonly ConcurrentDictionary<string, MetricCounter> _counters = new ConcurrentDictionary<string, MetricCounter>();
         private readonly CustomMetricsPoster _customMetricsPoster;
 
-        public MetricAggregator(string apiKey, string instanceId)
+        public MetricAggregator(string apiKey, string instanceId = null)
         {
             _customMetricsPoster = new CustomMetricsPoster(apiKey, instanceId);
 
