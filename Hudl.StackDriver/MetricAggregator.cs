@@ -33,7 +33,18 @@ namespace Hudl.StackDriver
         public void Increment(string metric)
         {
             var counter = _counters.GetOrAdd(metric, m => new MetricCounter(m, MetricType.Total));
-            counter.Increment();
+            counter.Increment(1);
+        }
+
+        public void Increment(string metric, int incrementBy)
+        {
+            if (incrementBy < 0)
+            {
+                throw new ArgumentException("incrementBy cannot be negative (" + incrementBy + ")");
+            }
+
+            var counter = _counters.GetOrAdd(metric, m => new MetricCounter(m, MetricType.Total));
+            counter.Increment(incrementBy);
         }
 
         public void SetupMetric(string metricName, MetricType type)
@@ -102,11 +113,11 @@ namespace Hudl.StackDriver
                 _count = 0;
             }
 
-            public void Increment()
+            public void Increment(int incrementBy)
             {
                 lock (_lock)
                 {
-                    _count++;
+                    _count += incrementBy;
                 }
             }
 
