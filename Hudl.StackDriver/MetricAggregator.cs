@@ -12,9 +12,6 @@ namespace Hudl.StackDriver
     /// Exposing a singleton instance of this somewhere in your app makes sense. Then call Increment(name) anywhere to start tracking metrics. Every 60 seconds
     /// the metrics will automatically be sent to StackDriver in a single batch call. You can customize whether you want to just sent the metric count or a 
     /// per-second value by calling SetupMetric(name, MetricType.PerSecond) once (typically on app startup).
-    /// 
-    /// Verbose=true will log the StackDriver API calls. It's helpful when metrics don't seem to be making it up to StackDriver. It will log the Http status code
-    /// returned by StackDriver as well as the respone body.
     /// </summary>
     public class MetricAggregator
     {
