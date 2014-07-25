@@ -7,7 +7,7 @@ namespace Hudl.StackDriver
 {
     public class CustomMetricsMessage
     {
-        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1);
+        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public const int ProtocolVersion = 1;
 
