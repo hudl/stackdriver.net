@@ -20,9 +20,9 @@ namespace Hudl.StackDriver
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable - this is important so the Timer does not get garbage collected
         private readonly Timer _timer;
 
-        public MetricAggregator(string apiKey, string instanceId = null)
+        public MetricAggregator(string apiKey, string instanceId = null, CustomMetricsPoster.IFailureCallback failureCallback = null)
         {
-            _customMetricsPoster = new CustomMetricsPoster(apiKey, instanceId);
+            _customMetricsPoster = new CustomMetricsPoster(apiKey, instanceId, failureCallback);
 
             _timer = new Timer
             {
