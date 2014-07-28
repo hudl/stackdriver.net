@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using log4net;
 using System;
 using System.Net.Http;
 using System.Collections.Generic;
@@ -13,8 +12,6 @@ namespace Hudl.StackDriver
     {
         private const string DefaultEndpointUrl = "https://custom-gateway.stackdriver.com/v1/custom";
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(CustomMetricsPoster));
-
         private static readonly HttpClient Client = new HttpClient(new HttpClientHandler
             {
                 UseProxy = false,
@@ -22,8 +19,9 @@ namespace Hudl.StackDriver
 
         private readonly string _apiKey;
         private readonly string _instanceId;
+        private readonly IFailureCallback _failureCallback;
 
-        public CustomMetricsPoster(string apiKey, string instanceId = null)
+        public CustomMetricsPoster(string apiKey, string instanceId = null, IFailureCallback failureCallback = null)
         {
             if (String.IsNullOrWhiteSpace(apiKey))
             {
@@ -32,6 +30,7 @@ namespace Hudl.StackDriver
 
             _apiKey = apiKey;
             _instanceId = instanceId;
+            _failureCallback = failureCallback ?? new ConsoleFailureCallback();
         }
 
         public void SendMetric(string name, object value, DateTime? collectedAt = null, string instanceId = null)
@@ -47,12 +46,12 @@ namespace Hudl.StackDriver
             var msg = new CustomMetricsMessage(new DataPoint(name, value, sendCollectedAt, sendInstanceId));
             var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson())).ConfigureAwait(false);
 
-            if (result.StatusCode != HttpStatusCode.Created)
+            if (result.StatusCode != HttpStatusCode.Created && _failureCallback != null)
             {
                 // the normal response is a 201. For any other response code, log the code and the response body (which will hopefully say 
                 // what StackDriver didn't like with the request.
                 var body = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Log.WarnFormat("Sent metric. Name={0}, StatusCode={1}, Body={2}", name, result.StatusCode, body);
+                _failureCallback.HandleMetricPostFailure(name, result.StatusCode, body);
             }
         }
 
@@ -66,12 +65,12 @@ namespace Hudl.StackDriver
             var msg = new CustomMetricsMessage(dataPoints);
             var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson())).ConfigureAwait(false);
 
-            if (result.StatusCode != HttpStatusCode.Created)
+            if (result.StatusCode != HttpStatusCode.Created && _failureCallback != null)
             {
                 // the normal response is a 201. For any other response code, log the code and the response body (which will hopefully say 
                 // what StackDriver didn't like with the request.
                 var body = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Log.WarnFormat("Sent metrics batch. StatusCode={0}, Body={1}", result.StatusCode, body);
+                _failureCallback.HandleMetricPostFailure(null, result.StatusCode, body);
             }
         }
 
@@ -82,5 +81,26 @@ namespace Hudl.StackDriver
             content.Headers.Add("x-stackdriver-apikey", _apiKey);
             return content;
         }
+
+        public interface IFailureCallback
+        {
+            void HandleMetricPostFailure(string metricName, HttpStatusCode statusCode, string body);
+        }
+
+        public sealed class ConsoleFailureCallback : IFailureCallback
+        {
+            public void HandleMetricPostFailure(string metricName, HttpStatusCode statusCode, string body)
+            {
+                if (metricName == null)
+                {
+                    Console.WriteLine("Sent metrics batch. StatusCode={0}, Body={1}", statusCode, body);
+                }
+                else
+                {
+                    Console.WriteLine("Sent metrics batch. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
+                }
+            }
+        }
+
     }
 }
