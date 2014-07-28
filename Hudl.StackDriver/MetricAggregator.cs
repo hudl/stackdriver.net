@@ -92,7 +92,7 @@ namespace Hudl.StackDriver
                 return new DataPoint(mc.Name, value, snapshot);
             }).ToList();
 
-            _customMetricsPoster.SendBatchMetricsAsync(dataPoints).RunSynchronously();
+            _customMetricsPoster.SendBatchMetricsAsync(dataPoints).Wait();
         }
 
         private sealed class MetricCounter
@@ -135,6 +135,7 @@ namespace Hudl.StackDriver
                 lock (_lock)
                 {
                     _sum += amount;
+                    _count++;
                 }
             }
 
