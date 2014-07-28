@@ -17,5 +17,11 @@ namespace Hudl.StackDriver
         /// PerSecond metrics will report the count/60s, or per-second avg
         /// </summary>
         PerSecond,
+
+        /// <summary>
+        /// This will track both a count and a sum and will report sum/count per period
+        /// </summary>
+        Average,
+
     }
 }

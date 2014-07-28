@@ -17,6 +17,7 @@ namespace Hudl.StackDriver
     {
         private readonly ConcurrentDictionary<string, MetricCounter> _counters = new ConcurrentDictionary<string, MetricCounter>();
         private readonly CustomMetricsPoster _customMetricsPoster;
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable - this is important so the Timer does not get garbage collected
         private readonly Timer _timer;
 
         public MetricAggregator(string apiKey, string instanceId = null)
@@ -46,6 +47,12 @@ namespace Hudl.StackDriver
 
             var counter = _counters.GetOrAdd(metric, m => new MetricCounter(m, MetricType.Total));
             counter.Increment(incrementBy);
+        }
+
+        public void Add(string metric, long amount)
+        {
+            var counter = _counters.GetOrAdd(metric, m => new MetricCounter(m, MetricType.Average));
+            counter.Add(amount);
         }
 
         public void SetupMetric(string metricName, MetricType type)
@@ -95,6 +102,7 @@ namespace Hudl.StackDriver
             private readonly MetricType _metricType;
             private DateTime _startedAt;
             private int _count;
+            private long _sum;
 
             public string Name
             {
@@ -122,16 +130,30 @@ namespace Hudl.StackDriver
                 }
             }
 
+            public void Add(long amount)
+            {
+                lock (_lock)
+                {
+                    _sum += amount;
+                }
+            }
+
             public int FreezeAndReset(out DateTime startedAt)
             {
                 lock (_lock)
                 {
                     startedAt = _startedAt;
                     var snapshotCount = _count;
+                    var snapshotSum = _sum;
 
                     _count = 0;
+                    _sum = 0;
                     _startedAt = DateTime.UtcNow;
 
+                    if (_metricType == MetricType.Average)
+                    {
+                        return (int)Math.Round((double)snapshotSum / snapshotCount, 0);
+                    }
                     return snapshotCount;
                 }
             }
