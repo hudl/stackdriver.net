@@ -153,7 +153,9 @@ namespace Hudl.StackDriver
 
                     if (_metricType == MetricType.Average)
                     {
-                        return (int)Math.Round((double)snapshotSum / snapshotCount, 0);
+                        return snapshotCount > 0
+                            ? (int) Math.Round((double) snapshotSum/snapshotCount, 0)
+                            : 0;
                     }
                     return snapshotCount;
                 }
