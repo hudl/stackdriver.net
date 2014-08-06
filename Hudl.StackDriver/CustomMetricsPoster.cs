@@ -33,12 +33,12 @@ namespace Hudl.StackDriver
             _failureCallback = failureCallback ?? new ConsoleFailureCallback();
         }
 
-        public void SendMetric(string name, object value, DateTime? collectedAt = null, string instanceId = null)
+        public virtual void SendMetric(string name, object value, DateTime? collectedAt = null, string instanceId = null)
         {
             SendMetricAsync(name, value, collectedAt, instanceId).RunSynchronously();
         }
 
-        public async Task SendMetricAsync(string name, object value, DateTime? collectedAt = null, string instanceId = null)
+        public virtual async Task SendMetricAsync(string name, object value, DateTime? collectedAt = null, string instanceId = null)
         {
             var sendCollectedAt = collectedAt.HasValue ? collectedAt.Value : DateTime.UtcNow;
             var sendInstanceId = instanceId ?? _instanceId;
@@ -55,12 +55,12 @@ namespace Hudl.StackDriver
             }
         }
 
-        public void SendBatchMetrics(IEnumerable<DataPoint> dataPoints)
+        public virtual void SendBatchMetrics(IEnumerable<DataPoint> dataPoints)
         {
             SendBatchMetricsAsync(dataPoints).RunSynchronously();
         }
 
-        public async Task SendBatchMetricsAsync(IEnumerable<DataPoint> dataPoints)
+        public virtual async Task SendBatchMetricsAsync(IEnumerable<DataPoint> dataPoints)
         {
             var msg = new CustomMetricsMessage(dataPoints);
             var result = await Client.PostAsync(DefaultEndpointUrl, PrepareContent(msg.ToJson())).ConfigureAwait(false);

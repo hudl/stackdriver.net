@@ -10,6 +10,16 @@ namespace Hudl.StackDriver
         private readonly long _collectedAt;
         private readonly string _instanceId;
 
+        public object Value
+        {
+            get { return _value; }
+        }
+
+        public string Name
+        {
+            get { return _name; }
+        }
+
         public DataPoint(string name, object value, DateTime collectedAt, string instanceId = null)
         {
             if (String.IsNullOrWhiteSpace(name))

@@ -21,13 +21,18 @@ namespace Hudl.StackDriver
         private readonly Timer _timer;
 
         public MetricAggregator(string apiKey, string instanceId = null, CustomMetricsPoster.IFailureCallback failureCallback = null)
+            : this(new CustomMetricsPoster(apiKey, instanceId, failureCallback), 60)
         {
-            _customMetricsPoster = new CustomMetricsPoster(apiKey, instanceId, failureCallback);
+        }
+
+        public MetricAggregator(CustomMetricsPoster poster, int seconds)
+        {
+            _customMetricsPoster = poster;
 
             _timer = new Timer
-            {
-                Interval = TimeSpan.FromSeconds(60).TotalMilliseconds,
-            };
+                {
+                    Interval = TimeSpan.FromSeconds(seconds).TotalMilliseconds,
+                };
             _timer.Elapsed += Tick;
             _timer.Start();
         }
@@ -120,13 +125,15 @@ namespace Hudl.StackDriver
                 _metricType = type;
                 _startedAt = DateTime.UtcNow;
                 _count = 0;
+                _sum = 0;
             }
 
             public void Increment(int incrementBy)
             {
                 lock (_lock)
                 {
-                    _count += incrementBy;
+                    _sum += incrementBy;
+                    _count++;
                 }
             }
 
@@ -139,7 +146,7 @@ namespace Hudl.StackDriver
                 }
             }
 
-            public int FreezeAndReset(out DateTime startedAt)
+            public long FreezeAndReset(out DateTime startedAt)
             {
                 lock (_lock)
                 {
@@ -154,10 +161,10 @@ namespace Hudl.StackDriver
                     if (_metricType == MetricType.Average)
                     {
                         return snapshotCount > 0
-                            ? (int) Math.Round((double) snapshotSum/snapshotCount, 0)
-                            : 0;
+                            ? (long) Math.Round((double) snapshotSum/snapshotCount, 0)
+                            : 0L;
                     }
-                    return snapshotCount;
+                    return snapshotSum;
                 }
             }
 
