@@ -33,13 +33,12 @@ namespace Hudl.StackDriver.Tests
                 aggregator.Increment(metricName);
             }
 
-            Thread.Sleep(4000);
+            Thread.Sleep(4500);
 
             Assert.NotNull(points);
             var dp = points.First();
             Assert.NotNull(dp);
             Assert.Equal(count1, (int)(double)dp.Value);
-
 
             for (int i = 0; i < count2; i++)
             {
@@ -74,7 +73,7 @@ namespace Hudl.StackDriver.Tests
                 aggregator.Increment(metricName, 2);
             }
 
-            Thread.Sleep(4000);
+            Thread.Sleep(4500);
 
             Assert.NotNull(points);
             var dp = points.First();
@@ -121,13 +120,13 @@ namespace Hudl.StackDriver.Tests
                 aggregator.Add(metricName3, count3);
             }
             sw.Stop();
-            Thread.Sleep(3100 - (int)sw.ElapsedMilliseconds);
+            Thread.Sleep(4500 - (int)sw.ElapsedMilliseconds);
 
             Assert.NotNull(points);
             Assert.Equal(count1 * 2, (int)(double)points.Single(dp => dp.Name == metricName1).Value);
             Assert.Equal(count2, (double)points.Single(dp => dp.Name == metricName2).Value);
             var val = points.Single(dp => dp.Name == metricName3);
-            Assert.Equal(count3 * count1, (double)points.Single(dp => dp.Name == metricName3).Value);
+            Assert.Equal(count3 * count1, (double)val.Value);
         }
 
         private void NoOp()
