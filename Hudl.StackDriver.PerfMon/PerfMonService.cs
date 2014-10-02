@@ -1,7 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Mime;
-using Amazon.AutoScaling.Model;
 using Hudl.StackDriver.PerfMon.Config;
 using log4net;
 
@@ -53,7 +52,13 @@ namespace Hudl.StackDriver.PerfMon
                 _reporter.Stop();
             }
             Log.Info("Stopping service");
-            Console.ReadLine();
+
+#if (DEBUG)
+            if (Debugger.IsAttached)
+            {
+                Console.ReadLine();
+            }
+#endif
         }
     }
 }

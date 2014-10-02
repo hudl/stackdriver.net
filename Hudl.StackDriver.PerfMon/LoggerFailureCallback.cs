@@ -11,11 +11,11 @@ namespace Hudl.StackDriver.PerfMon
         {
             if (metricName == null)
             {
-                Logger.InfoFormat("Sent metrics batch. StatusCode={0}, Body={1}", statusCode, body);
+                Logger.ErrorFormat("Send metrics batch failed. StatusCode={0}, Body={1}", statusCode, body);
             }
             else
             {
-                Logger.InfoFormat("Sent metrics batch. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
+                Logger.ErrorFormat("Send metrics batch failed. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
             }
         }
     }
