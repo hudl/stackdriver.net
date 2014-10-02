@@ -1,4 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Net.Mime;
+using Amazon.AutoScaling.Model;
+using Hudl.StackDriver.PerfMon.Config;
 using log4net;
 
 namespace Hudl.StackDriver.PerfMon
@@ -10,8 +14,25 @@ namespace Hudl.StackDriver.PerfMon
 
         public void Start()
         {
-            var factory = new PerfMonAgentFactory();
-            _reporter = factory.CreateAgentWithConfiguration(JsonConfigProvider.GetConfigFromFile(@"C:\Users\jamie.snell\Documents\HudlGit\stackdriver.net\Hudl.StackDriver.PerfMon\config.json"));
+            const string configFileName = "config.json";
+
+            var applicationFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (applicationFilePath == null)
+            {
+                Log.Error("Unable to get applications path");
+                Environment.Exit(404);
+            }
+
+            var configfilePath = Path.Combine(applicationFilePath, configFileName);
+
+            var config = JsonConfigProvider.GetConfigFromFile(configfilePath);
+
+            _reporter = PerfMonAgentFactory.CreateAgentWithConfiguration(config);
+            if (_reporter == null)
+            {
+                Log.Error("Unable to start service.");
+                Environment.Exit(500);
+            }
 
             Log.Info("Starting service.");
 
@@ -27,7 +48,10 @@ namespace Hudl.StackDriver.PerfMon
 
         public void Stop()
         {
-            _reporter.Stop();
+            if (_reporter != null)
+            {
+                _reporter.Stop();
+            }
             Log.Info("Stopping service");
             Console.ReadLine();
         }

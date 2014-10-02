@@ -1,6 +1,6 @@
-﻿namespace Hudl.StackDriver.PerfMon
+﻿namespace Hudl.StackDriver.PerfMon.Config
 {
-    class CounterConfig
+    public class CounterConfig
     {
         public string Provider { get; set; }
         public string Category { get; set; }

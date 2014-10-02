@@ -1,8 +1,7 @@
 {
-		"counters": 
-			[
-				{"provider": "PerfOS", "category":"Processor", "instance":"_Total", "counter":"InterruptsPersec", "name":"Processor Interrupts/sec"}
-			],
-		"instanceId": "i-492e3467",
-		"apiKey": "ILTY12KGZ5HJHG1HND02FD0ASKS4QU9L"
+		"apiKey": "",
+		"awsSecretKey" : "",
+		"awsAccessKey" : "",
+		"configS3Bucket" : "hudl-config",
+		"configS3Key" : "s-web/perfMon2Stackdriver/counterConfig.json",
 }

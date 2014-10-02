@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using ServiceStack.Text;
 
-namespace Hudl.StackDriver.PerfMon
+namespace Hudl.StackDriver.PerfMon.Config
 {
     internal class JsonConfigProvider
     {

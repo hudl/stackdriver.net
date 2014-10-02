@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK">
+      <HintPath>..\packages\AWSSDK.2.3.0.0\lib\net45\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -56,9 +59,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CounterConfig.cs" />
-    <Compile Include="CountersConfig.cs" />
-    <Compile Include="JsonConfigProvider.cs" />
+    <Compile Include="Config\CounterConfig.cs" />
+    <Compile Include="Config\CounterConfigEventArgs.cs" />
+    <Compile Include="Config\S3CounterConfigReader.cs" />
+    <Compile Include="Config\CountersConfig.cs" />
+    <Compile Include="Config\ICounterConfigReader.cs" />
+    <Compile Include="Config\JsonConfigProvider.cs" />
     <Compile Include="LoggerFailureCallback.cs" />
     <Compile Include="PerfMonReporter.cs" />
     <Compile Include="PerfmonAgentFactory.cs" />
@@ -68,6 +74,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
