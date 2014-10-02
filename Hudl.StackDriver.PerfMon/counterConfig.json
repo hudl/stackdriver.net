@@ -1,0 +1,6 @@
+{
+		"counters": 
+			[
+				{"provider": "PerfOS", "category":"Processor", "instance":"_Total", "counter":"InterruptsPersec", "name":"Processor Interrupts/sec"}
+			]
+}
