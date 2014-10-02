@@ -1,3 +1,5 @@
+This repo contains the Stackdriver.net library and the Hudl.Stackdriver.Perfmon service
+
 stackdriver.net
 ===============
 
@@ -25,3 +27,10 @@ Another way of using this is to simply use the ```CustomMetricsPoster``` class. 
 var poster = new CustomMetricsPoster(ApiKey);
 poster.SendMetric("purchase.amount", 105.25);
 ```
+
+Hudl.Stackdriver.Perfmon
+========================
+
+A Windows service for delivering Perfmon metrics to Stackdriver.
+
+For documentation [view the README](Hudl.StackDriver.PerfMon/README.md)
