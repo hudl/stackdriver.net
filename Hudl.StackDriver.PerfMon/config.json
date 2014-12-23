@@ -1,0 +1,7 @@
+{
+		"apiKey": "",
+		"awsSecretKey" : "",
+		"awsAccessKey" : "",
+		"configS3Bucket" : "hudl-config",
+		"configS3Key" : "s-web/perfMon2Stackdriver/counterConfig.json",
+}

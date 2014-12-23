@@ -94,11 +94,11 @@ namespace Hudl.StackDriver
             {
                 if (metricName == null)
                 {
-                    Console.WriteLine("Sent metrics batch. StatusCode={0}, Body={1}", statusCode, body);
+                    Console.WriteLine("Send metrics batch failed. StatusCode={0}, Body={1}", statusCode, body);
                 }
                 else
                 {
-                    Console.WriteLine("Sent metrics batch. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
+                    Console.WriteLine("Send metrics batch failed. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
                 }
             }
         }
