@@ -149,6 +149,11 @@ namespace Hudl.StackDriver.PerfMon.Config
         public CountersConfig Config { get; private set; }
         public event EventHandler<CounterConfigEventArgs> ConfigUpdated;
 
+        public void TriggerUpdate()
+        {
+            UpdateConfig();
+        }
+
         public void Dispose()
         {
             _updateTimer.Stop();

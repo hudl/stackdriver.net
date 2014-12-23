@@ -6,5 +6,6 @@ namespace Hudl.StackDriver.PerfMon.Config
     {
         CountersConfig Config { get; }
         event EventHandler<CounterConfigEventArgs> ConfigUpdated;
+        void TriggerUpdate();
     }
 }

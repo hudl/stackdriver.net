@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Hudl.StackDriver.PerfMon.Config;
 using log4net;
+using Microsoft.Web.Administration;
 
 namespace Hudl.StackDriver.PerfMon
 {
@@ -23,7 +24,11 @@ namespace Hudl.StackDriver.PerfMon
         private readonly string _instanceId;
         private readonly Timer _timer;
 
+#if DEBUG
+        private const int OneMinuteMilliseconds = 500; // make reporting quicker when testing.
+#else
         private const int OneMinuteMilliseconds = 60000; //One minute is the minimum time between StackDriver metrics.
+#endif
 
         public PerfMonReporter(IList<CounterConfig> counters, string instanceId, string stackDriverApiKey, ICounterConfigReader configReader)
             : this(counters, instanceId, stackDriverApiKey, true)
@@ -32,7 +37,9 @@ namespace Hudl.StackDriver.PerfMon
             if (configReader != null)
             {
                 configReader.ConfigUpdated += OnConfigurationUpdated;
+                configReader.TriggerUpdate();
             }
+
             GetMetrics();
         }
 
@@ -85,16 +92,21 @@ namespace Hudl.StackDriver.PerfMon
 
                 Parallel.ForEach(Counters, counter =>
                 {
-                    var datapoint = GetDataPoint(counter);
+                    var datapoint = GetDataPoints(counter);
                     if (datapoint != null)
                     {
-                        datapoints.Add(datapoint);
+                        datapoint.ForEach(datapoints.Add);
                     }
                 });
 
-                if (datapoints.Count > 0)
+
+                if (datapoints.Any())
                 {
                     await _stackDriverPoster.SendBatchMetricsAsync(datapoints);
+                }
+                else
+                {
+                    Log.Debug("No metrics were reported during this cycle.");
                 }
             }
             catch (Exception ex)
@@ -103,13 +115,47 @@ namespace Hudl.StackDriver.PerfMon
             }
         }
 
-        private DataPoint GetDataPoint(CounterConfig counter)
+        private string GetPropertyString(ManagementObject collection, string propertyName)
         {
+            // This dumb collection doesn't have any way to check if a property exists. Commence looping 
 
-            var friendlyName = counter.Name;
+            // check if it has the property at all, if not return null.
+            if (collection.Properties.Cast<PropertyData>().All(property => property.Name != propertyName)) return null;
+
+            // if it does, get the value of the property.
+            var value = collection[propertyName];
+            if (value is string)
+            {
+                return value.ToString();
+            }
+            return null;
+        }
+
+        private int? GetPropertyInt(ManagementObject collection, string propertyName)
+        {
+            // This dumb collection doesn't have any way to check if a property exists. Commence looping 
+
+            // check if it has the property at all, if not return null.
+            if (collection.Properties.Cast<PropertyData>().All(property => property.Name != propertyName)) return null;
+
+            // if it does, get the value of the property.
+            int intValue;
+            var value = collection[propertyName].ToString();
+            if (int.TryParse(value, out intValue))
+            {
+                return intValue;
+            }
+            return null;
+        }
+
+        private List<DataPoint> GetDataPoints(CounterConfig counter)
+        {
+            if (counter == null) return null;
+
+
             var providerName = counter.Provider;
             var categoryName = counter.Category;
-
+            var instance = counter.Instance;
             var counterName = counter.Counter;
 
             if (string.IsNullOrWhiteSpace(providerName) || string.IsNullOrWhiteSpace(categoryName) || string.IsNullOrWhiteSpace(counterName))
@@ -121,36 +167,73 @@ namespace Hudl.StackDriver.PerfMon
             var whereClause = string.Empty;
             if (!string.IsNullOrWhiteSpace(counter.Instance))
             {
-                whereClause = string.Format(" Where Name Like '{0}'", counter.Instance);
+                whereClause = string.Format(" Where Name Like '{0}'", instance);
             }
 
-            var queryString = string.Format("Select Name, {2} from Win32_PerfFormattedData_{0}_{1}{3}",
-                providerName, categoryName, counterName, whereClause);
-            var search = new ManagementObjectSearcher(Scope, new ObjectQuery(queryString));
+            var queryString = string.Format("Select * from Win32_PerfFormattedData_{0}_{1}{2}",
+                providerName, categoryName, whereClause);
 
+            var search = new ManagementObjectSearcher(Scope, new ObjectQuery(queryString));
+            var dataPoints = new List<DataPoint>();
             try
             {
                 var queryResults = search.Get();
+                var applicationPoolName = "";
 
                 foreach (var result in queryResults.Cast<ManagementObject>())
                 {
                     try
                     {
+                        var friendlyName = counter.Name;
+                        var resultName = GetPropertyString(result, "Name");
+
                         var value = Convert.ToSingle(result[counterName]);
-                        Log.DebugFormat("{0}/{1}: {2}", ServerName, friendlyName, value);
-                        return new DataPoint(friendlyName, value, DateTime.UtcNow, _instanceId);
+
+                        var processId = GetPropertyInt(result, "IDProcess");
+                        if (processId.HasValue)
+                        {
+                            applicationPoolName = GetAppPoolByProcessId(processId);
+                        }
+
+                        // Prefer in order of ApplicationName, ResultName, Instance or just use empty string.
+                        var instanceName =
+                            !string.IsNullOrWhiteSpace(applicationPoolName) ? applicationPoolName
+                            : !string.IsNullOrWhiteSpace(resultName) ? resultName
+                            : !string.IsNullOrWhiteSpace(instance) ? instance
+                            : string.Empty;
+
+                        Log.DebugFormat("{0}/{1}/{2} ({3}): {4}", ServerName, friendlyName, instanceName, applicationPoolName, value);
+
+                        if (!string.IsNullOrWhiteSpace(instanceName))
+                        {
+                            friendlyName = string.Concat(friendlyName, " - ", instanceName);
+                        }
+                        dataPoints.Add(new DataPoint(friendlyName, value, DateTime.UtcNow, _instanceId));
                     }
                     catch (Exception ex)
                     {
-                        Log.ErrorFormat(string.Format("Exception while retrieving metric results. Query: {0}", queryString), ex);
+                        Log.Error(string.Format("Exception while retrieving metric results. Query: {0}", queryString), ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat(string.Format("Exception while polling metrics. Query: {0}", queryString), ex);
+                Log.Error(string.Format("Exception while polling metrics. Query: {0}", queryString), ex);
             }
-            return null;
+
+            return dataPoints;
+        }
+
+        private static string GetAppPoolByProcessId(int? processId)
+        {
+            // Get the actual process name.
+            var serverManager = new ServerManager();
+            var applicationPoolCollection = serverManager.ApplicationPools;
+            foreach (var applicationPool in applicationPoolCollection.Where(applicationPool => applicationPool.WorkerProcesses.Any(workerProcess => workerProcess.ProcessId == processId)))
+            {
+                return applicationPool.Name;
+            }
+            return "";
         }
 
         public void Start()
