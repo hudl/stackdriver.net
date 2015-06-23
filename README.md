@@ -2,6 +2,7 @@ This repo contains the Stackdriver.net library and the Hudl.Stackdriver.Perfmon 
 
 stackdriver.net
 ===============
+[![](https://img.shields.io/badge/hudl-OSS-orange.svg)](http://hudl.github.io/)
 
 A C# wrapper for sending custom metrics to StackDriver
 
