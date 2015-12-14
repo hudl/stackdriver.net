@@ -127,7 +127,8 @@ namespace Hudl.StackDriver.PerfMon.Config
                         var newConfig = new JsonSerializer<CountersConfig>().DeserializeFromString(fileContents);
                         if (newConfig != null && newConfig.Counters != null)
                         {
-                            ConfigUpdated(this, new CounterConfigEventArgs(newConfig.Counters));
+                            if (ConfigUpdated != null)
+                                ConfigUpdated(this, new CounterConfigEventArgs(newConfig.Counters));
                         }
                         DataLastModified = fileLastModified;
                     }
