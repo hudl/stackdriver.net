@@ -33,10 +33,10 @@ namespace Hudl.StackDriver.PerfMon
             : this(counters, instanceId, stackDriverApiKey, true)
         {
             ConfigReader = configReader;
-            if (configReader != null)
+            if (ConfigReader != null)
             {
-                configReader.ConfigUpdated += OnConfigurationUpdated;
-                configReader.TriggerUpdate();
+                ConfigReader.ConfigUpdated += OnConfigurationUpdated;
+                ConfigReader.TriggerUpdate();
             }
 
             GetMetrics();
@@ -52,6 +52,7 @@ namespace Hudl.StackDriver.PerfMon
         }
 
         // init is just used to make the signature of this private constructor different.
+        // ReSharper disable once UnusedParameter.Local
         private PerfMonReporter(IList<CounterConfig> counters, string instanceId, string stackDriverApiKey, bool init)
         {
             var serverName = Environment.MachineName;
@@ -162,6 +163,7 @@ namespace Hudl.StackDriver.PerfMon
 
                 try
                 {
+                    // ReSharper disable once PossibleMultipleEnumeration
                     Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(), queryString);
                 }
                 catch (ManagementException ex)
@@ -170,6 +172,7 @@ namespace Hudl.StackDriver.PerfMon
                     return null;
                 }
 
+                // ReSharper disable once PossibleMultipleEnumeration
                 foreach (var result in results)
                 {
                     try
