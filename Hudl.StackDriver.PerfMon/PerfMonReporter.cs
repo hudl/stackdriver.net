@@ -150,7 +150,85 @@ namespace Hudl.StackDriver.PerfMon
         {
             if (counter == null) return null;
 
+            var queryString = BuildQueryString(counter);
+            if (queryString == null) return null;
 
+            var search = new ManagementObjectSearcher(Scope, new ObjectQuery(queryString));
+            var dataPoints = new List<DataPoint>();
+            try
+            {
+                var queryResults = search.Get();
+                var results = queryResults.Cast<ManagementObject>();
+
+                try
+                {
+                    Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(), queryString);
+                }
+                catch (ManagementException ex)
+                {
+                    Log.Warn(string.Format("Unable to read results of '{0}'", queryString), ex);
+                    return null;
+                }
+
+                foreach (var result in results)
+                {
+                    try
+                    {
+                       dataPoints.Add(AssembleDataPoint(counter, result));
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(string.Format("Exception while retrieving metric results. Query: {0}", queryString),
+                            ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(string.Format("Exception while polling metrics. Query: {0}", queryString), ex);
+            }
+
+            return dataPoints;
+        }
+
+        private DataPoint AssembleDataPoint(CounterConfig counter, ManagementObject result)
+        {
+            var instance = counter.Instance;
+            var counterName = counter.Counter;
+            string applicationPoolName = string.Empty;
+            var friendlyName = counter.Name;
+            var resultName = GetPropertyString(result, "Name");
+
+            var value = Convert.ToSingle(result[counterName]);
+
+            var processId = GetPropertyInt(result, "IDProcess");
+            if (processId.HasValue)
+            {
+                applicationPoolName = GetAppPoolByProcessId(processId);
+            }
+
+            // Prefer in order of ApplicationName, ResultName, Instance or just use empty string.
+            var instanceName =
+                !string.IsNullOrWhiteSpace(applicationPoolName)
+                    ? applicationPoolName
+                    : !string.IsNullOrWhiteSpace(resultName)
+                        ? resultName
+                        : !string.IsNullOrWhiteSpace(instance)
+                            ? instance
+                            : string.Empty;
+
+            Log.DebugFormat("{0}/{1} ({2}): {3}", friendlyName, instanceName,
+                applicationPoolName, value);
+
+            if (!string.IsNullOrWhiteSpace(instanceName))
+            {
+                friendlyName = string.Concat(friendlyName, " - ", instanceName);
+            }
+            return new DataPoint(friendlyName, value, DateTime.UtcNow, _instanceId);
+        }
+
+        private static string BuildQueryString(CounterConfig counter)
+        {
             var providerName = counter.Provider;
             var categoryName = counter.Category;
             var instance = counter.Instance;
@@ -172,72 +250,7 @@ namespace Hudl.StackDriver.PerfMon
 
             var queryString = string.Format("Select * from Win32_PerfFormattedData_{0}_{1}{2}",
                 providerName, categoryName, whereClause);
-
-            var search = new ManagementObjectSearcher(Scope, new ObjectQuery(queryString));
-            var dataPoints = new List<DataPoint>();
-            try
-            {
-                var queryResults = search.Get();
-                var applicationPoolName = "";
-                var results = queryResults.Cast<ManagementObject>();
-
-                try
-                {
-                    Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(), queryString);
-                }
-                catch (ManagementException ex)
-                {
-                    Log.WarnFormat("Unable to read results of '{0}'", queryString, ex);
-                    return null;
-                }
-
-                foreach (var result in results)
-                {
-                    try
-                    {
-                        var friendlyName = counter.Name;
-                        var resultName = GetPropertyString(result, "Name");
-
-                        var value = Convert.ToSingle(result[counterName]);
-
-                        var processId = GetPropertyInt(result, "IDProcess");
-                        if (processId.HasValue)
-                        {
-                            applicationPoolName = GetAppPoolByProcessId(processId);
-                        }
-
-                        // Prefer in order of ApplicationName, ResultName, Instance or just use empty string.
-                        var instanceName =
-                            !string.IsNullOrWhiteSpace(applicationPoolName)
-                                ? applicationPoolName
-                                : !string.IsNullOrWhiteSpace(resultName)
-                                    ? resultName
-                                    : !string.IsNullOrWhiteSpace(instance)
-                                        ? instance
-                                        : string.Empty;
-
-                        Log.DebugFormat("{0}/{1} ({2}): {3}", friendlyName, instanceName,
-                            applicationPoolName, value);
-
-                        if (!string.IsNullOrWhiteSpace(instanceName))
-                        {
-                            friendlyName = string.Concat(friendlyName, " - ", instanceName);
-                        }
-                        dataPoints.Add(new DataPoint(friendlyName, value, DateTime.UtcNow, _instanceId));
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(string.Format("Exception while retrieving metric results. Query: {0}", queryString),
-                            ex);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(string.Format("Exception while polling metrics. Query: {0}", queryString), ex);
-            }
-
-            return dataPoints;
+            return queryString;
         }
 
         private static string GetAppPoolByProcessId(int? processId)
