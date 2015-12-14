@@ -13,7 +13,6 @@ namespace Hudl.StackDriver.PerfMon
 {
     public class PerfMonReporter
     {
-        private string ServerName { get; set; }
         private IList<CounterConfig> Counters { get; set; }
         private ICounterConfigReader ConfigReader { get; set; }
         private ManagementScope Scope { get; set; }
@@ -217,7 +216,7 @@ namespace Hudl.StackDriver.PerfMon
                                         ? instance
                                         : string.Empty;
 
-                        Log.DebugFormat("{0}/{1}/{2} ({3}): {4}", ServerName, friendlyName, instanceName,
+                        Log.DebugFormat("{0}/{1} ({2}): {3}", friendlyName, instanceName,
                             applicationPoolName, value);
 
                         if (!string.IsNullOrWhiteSpace(instanceName))
