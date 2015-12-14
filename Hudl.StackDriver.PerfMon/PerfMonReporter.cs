@@ -45,9 +45,8 @@ namespace Hudl.StackDriver.PerfMon
 
         public void OnConfigurationUpdated(object sender, CounterConfigEventArgs e)
         {
-            if (e == null) return;
-
-            Log.InfoFormat("Updated Counters. Previous={0} New={1}", Counters == null ? 0 : Counters.Count, e.Counters == null ? 0 : e.Counters.Count);
+            if (e == null || e.Counters == null) return;
+            Log.InfoFormat("Updated Counters. Previous={0} New={1}", Counters == null ? 0 : Counters.Count, e.Counters.Count);
 
             Counters = e.Counters;
         }
@@ -179,8 +178,19 @@ namespace Hudl.StackDriver.PerfMon
             {
                 var queryResults = search.Get();
                 var applicationPoolName = "";
+                var results = queryResults.Cast<ManagementObject>();
 
-                foreach (var result in queryResults.Cast<ManagementObject>())
+                try
+                {
+                    Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(),queryString);
+                }
+                catch (ManagementException ex) 
+                {
+                    Log.WarnFormat("Unable to read results of '{0}'", queryString, ex);
+                    return null;
+                }
+
+                foreach(var result in results)
                 {
                     try
                     {
