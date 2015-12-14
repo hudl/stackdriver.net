@@ -39,7 +39,6 @@ namespace Hudl.StackDriver.PerfMon.Config
             string awsSecretKey)
             : this(s3Bucket, s3Key)
         {
-            _updateSeconds = updateSeconds;
             _awsAccessKey = awsAccessKey;
             _awsSecretKey = awsSecretKey;
             _updateTimer = InitializeTimer(updateSeconds);

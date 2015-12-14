@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using Hudl.StackDriver.PerfMon.Config;
 using log4net;
 
@@ -8,14 +8,14 @@ namespace Hudl.StackDriver.PerfMon
 {
     internal class PerfMonService
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PerfMonService));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PerfMonService));
         private PerfMonReporter _reporter;
 
         public void Start()
         {
             const string configFileName = "config.json";
 
-            var applicationFilePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var applicationFilePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (applicationFilePath == null)
             {
                 Log.Error("Unable to get applications path");

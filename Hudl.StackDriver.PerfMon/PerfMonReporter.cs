@@ -11,7 +11,6 @@ using Microsoft.Web.Administration;
 
 namespace Hudl.StackDriver.PerfMon
 {
-
     public class PerfMonReporter
     {
         private string ServerName { get; set; }
@@ -19,7 +18,7 @@ namespace Hudl.StackDriver.PerfMon
         private ICounterConfigReader ConfigReader { get; set; }
         private ManagementScope Scope { get; set; }
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PerfMonReporter));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PerfMonReporter));
         private readonly CustomMetricsPoster _stackDriverPoster;
         private readonly string _instanceId;
         private readonly Timer _timer;
@@ -30,7 +29,8 @@ namespace Hudl.StackDriver.PerfMon
         private const int OneMinuteMilliseconds = 60000; //One minute is the minimum time between StackDriver metrics.
 #endif
 
-        public PerfMonReporter(IList<CounterConfig> counters, string instanceId, string stackDriverApiKey, ICounterConfigReader configReader)
+        public PerfMonReporter(IList<CounterConfig> counters, string instanceId, string stackDriverApiKey,
+            ICounterConfigReader configReader)
             : this(counters, instanceId, stackDriverApiKey, true)
         {
             ConfigReader = configReader;
@@ -46,7 +46,8 @@ namespace Hudl.StackDriver.PerfMon
         public void OnConfigurationUpdated(object sender, CounterConfigEventArgs e)
         {
             if (e == null || e.Counters == null) return;
-            Log.InfoFormat("Updated Counters. Previous={0} New={1}", Counters == null ? 0 : Counters.Count, e.Counters.Count);
+            Log.InfoFormat("Updated Counters. Previous={0} New={1}", Counters == null ? 0 : Counters.Count,
+                e.Counters.Count);
 
             Counters = e.Counters;
         }
@@ -63,7 +64,7 @@ namespace Hudl.StackDriver.PerfMon
 
             _instanceId = instanceId;
 
-            _timer = new Timer { Interval = OneMinuteMilliseconds };
+            _timer = new Timer {Interval = OneMinuteMilliseconds};
             _timer.Elapsed += GetMetrics;
         }
 
@@ -77,7 +78,6 @@ namespace Hudl.StackDriver.PerfMon
         {
             GetMetrics();
         }
-
 
 
         public async void GetMetrics()
@@ -157,9 +157,11 @@ namespace Hudl.StackDriver.PerfMon
             var instance = counter.Instance;
             var counterName = counter.Counter;
 
-            if (string.IsNullOrWhiteSpace(providerName) || string.IsNullOrWhiteSpace(categoryName) || string.IsNullOrWhiteSpace(counterName))
+            if (string.IsNullOrWhiteSpace(providerName) || string.IsNullOrWhiteSpace(categoryName) ||
+                string.IsNullOrWhiteSpace(counterName))
             {
-                Log.ErrorFormat("Invalid Counter. Provider={0}, Category={1}, Name={2}", providerName, categoryName, counterName);
+                Log.ErrorFormat("Invalid Counter. Provider={0}, Category={1}, Name={2}", providerName, categoryName,
+                    counterName);
                 return null;
             }
 
@@ -182,15 +184,15 @@ namespace Hudl.StackDriver.PerfMon
 
                 try
                 {
-                    Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(),queryString);
+                    Log.DebugFormat("Retrieved {0} results from '{1}'", results.Count(), queryString);
                 }
-                catch (ManagementException ex) 
+                catch (ManagementException ex)
                 {
                     Log.WarnFormat("Unable to read results of '{0}'", queryString, ex);
                     return null;
                 }
 
-                foreach(var result in results)
+                foreach (var result in results)
                 {
                     try
                     {
@@ -207,12 +209,16 @@ namespace Hudl.StackDriver.PerfMon
 
                         // Prefer in order of ApplicationName, ResultName, Instance or just use empty string.
                         var instanceName =
-                            !string.IsNullOrWhiteSpace(applicationPoolName) ? applicationPoolName
-                            : !string.IsNullOrWhiteSpace(resultName) ? resultName
-                            : !string.IsNullOrWhiteSpace(instance) ? instance
-                            : string.Empty;
+                            !string.IsNullOrWhiteSpace(applicationPoolName)
+                                ? applicationPoolName
+                                : !string.IsNullOrWhiteSpace(resultName)
+                                    ? resultName
+                                    : !string.IsNullOrWhiteSpace(instance)
+                                        ? instance
+                                        : string.Empty;
 
-                        Log.DebugFormat("{0}/{1}/{2} ({3}): {4}", ServerName, friendlyName, instanceName, applicationPoolName, value);
+                        Log.DebugFormat("{0}/{1}/{2} ({3}): {4}", ServerName, friendlyName, instanceName,
+                            applicationPoolName, value);
 
                         if (!string.IsNullOrWhiteSpace(instanceName))
                         {
@@ -222,7 +228,8 @@ namespace Hudl.StackDriver.PerfMon
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(string.Format("Exception while retrieving metric results. Query: {0}", queryString), ex);
+                        Log.Error(string.Format("Exception while retrieving metric results. Query: {0}", queryString),
+                            ex);
                     }
                 }
             }
@@ -239,7 +246,11 @@ namespace Hudl.StackDriver.PerfMon
             // Get the actual process name.
             var serverManager = new ServerManager();
             var applicationPoolCollection = serverManager.ApplicationPools;
-            foreach (var applicationPool in applicationPoolCollection.Where(applicationPool => applicationPool.WorkerProcesses.Any(workerProcess => workerProcess.ProcessId == processId)))
+            foreach (
+                var applicationPool in
+                    applicationPoolCollection.Where(
+                        applicationPool =>
+                            applicationPool.WorkerProcesses.Any(workerProcess => workerProcess.ProcessId == processId)))
             {
                 return applicationPool.Name;
             }
