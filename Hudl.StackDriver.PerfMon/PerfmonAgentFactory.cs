@@ -7,7 +7,7 @@ namespace Hudl.StackDriver.PerfMon
 {
     public class PerfMonAgentFactory
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PerfMonAgentFactory));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PerfMonAgentFactory));
 
         public static PerfMonReporter CreateAgentWithConfiguration(CountersConfig config)
         {

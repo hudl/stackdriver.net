@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+
 <log4net>
   <appender name="ColoredConsoleAppender" type="log4net.Appender.ColoredConsoleAppender">
     <mapping>
@@ -22,7 +23,8 @@
     <maxSizeRollBackups value="2" />
 
     <layout type="log4net.Layout.PatternLayout">
-      <conversionPattern value="%utcdate Thread=%thread Level=%level Logger=&quot;%logger&quot; File=&quot;%file&quot; Line=%line Message=&quot;%message&quot;%newline" />
+      <conversionPattern
+        value="%utcdate Thread=%thread Level=%level Logger=&quot;%logger&quot; File=&quot;%file&quot; Line=%line Message=&quot;%message&quot;%newline" />
     </layout>
   </appender>
 

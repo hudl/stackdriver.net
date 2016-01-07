@@ -5,7 +5,7 @@ namespace Hudl.StackDriver.PerfMon
 {
     public sealed class LoggerFailureCallback : CustomMetricsPoster.IFailureCallback
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(CustomMetricsPoster));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof (CustomMetricsPoster));
 
         public void HandleMetricPostFailure(string metricName, HttpStatusCode statusCode, string body)
         {
@@ -15,7 +15,8 @@ namespace Hudl.StackDriver.PerfMon
             }
             else
             {
-                Logger.ErrorFormat("Send metrics batch failed. StatusCode={0}, Body={1}, MetricName={2}", statusCode, body, metricName);
+                Logger.ErrorFormat("Send metrics batch failed. StatusCode={0}, Body={1}, MetricName={2}", statusCode,
+                    body, metricName);
             }
         }
     }

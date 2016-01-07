@@ -3,7 +3,7 @@ using Topshelf;
 
 namespace Hudl.StackDriver.PerfMon
 {
-    static class Program
+    internal static class Program
     {
         private static void Main()
         {
@@ -26,5 +26,3 @@ namespace Hudl.StackDriver.PerfMon
         }
     }
 }
-
-
