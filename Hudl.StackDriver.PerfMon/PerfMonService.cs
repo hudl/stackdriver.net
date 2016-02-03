@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using Hudl.StackDriver.PerfMon.Config;
 using log4net;
+using System.Diagnostics;
 
 namespace Hudl.StackDriver.PerfMon
 {

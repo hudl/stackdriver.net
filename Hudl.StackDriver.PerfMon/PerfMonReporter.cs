@@ -45,8 +45,14 @@ namespace Hudl.StackDriver.PerfMon
         public void OnConfigurationUpdated(object sender, CounterConfigEventArgs e)
         {
             if (e == null || e.Counters == null) return;
-            Log.InfoFormat("Updated Counters. Previous={0} New={1}", Counters == null ? 0 : Counters.Count,
-                e.Counters.Count);
+
+            var CurrentCounterCount = 0;
+            if (Counters != null)
+            {
+                CurrentCounterCount = Counters.Count;
+            }
+
+            Log.InfoFormat("Updated Counters. Previous={0} New={1}", CurrentCounterCount, e.Counters.Count);
 
             Counters = e.Counters;
         }
