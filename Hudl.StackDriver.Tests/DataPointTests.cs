@@ -8,7 +8,7 @@ namespace Hudl.StackDriver.Tests
     public class DataPointTests
     {
         [Fact]
-        public void MissingMetricName_ThrowsException()
+        public static void MissingMetricName_ThrowsException()
         {
             Assert.Throws<ArgumentNullException>(() => new DataPoint(null, 123, DateTime.Now));
             Assert.Throws<ArgumentNullException>(() => new DataPoint("", 123, DateTime.Now));
